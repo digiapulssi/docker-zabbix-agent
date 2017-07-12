@@ -1,5 +1,5 @@
-FROM debian:jessie
-MAINTAINER Boris HUISGEN <bhuisgen@hbis.fr>
+FROM debian:stretch-slim
+MAINTAINER Sami Pajunen <sami.pajunen@digia.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 

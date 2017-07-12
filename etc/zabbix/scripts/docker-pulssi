@@ -1,0 +1,163 @@
+#!/bin/sh
+set -e
+
+NC=$(command -v netcat || command -v nc || exit 1)
+DOCKER_SOCKET=/var/run/docker.sock
+STATS_DIR=/var/lib/zabbix/stats
+
+if [ ! -e "$STATS_DIR" ]; then
+  mkdir $STATS_DIR
+fi
+
+CONFIG_FILE=/etc/zabbix/scripts/trapper/docker.conf
+
+[ -r "$CONFIG_FILE" ] && . $CONFIG_FILE
+
+
+docker_get() {
+  RESPONSE=$(printf "GET $1 HTTP/1.0\r\n\r\n" | sudo $NC -U $DOCKER_SOCKET | tail -n 1)
+}
+
+docker_exec() {
+  local BODY="{\"AttachStdout\": true, \"Cmd\": [$2]}"
+
+  local CREATE_RESPONSE=$(printf "POST /containers/$1/exec HTTP/1.0\r\nContent-Type: application/json\r\nContent-Length: ${#BODY}\r\n\r\n${BODY}" | sudo $NC -U $DOCKER_SOCKET | tail -n 1)
+
+  local RUN_ID=$(echo $CREATE_RESPONSE | jq ".Id" | sed -e 's/"//g')
+
+  RESPONSE=$(printf "POST /exec/$RUN_ID/start HTTP/1.0\r\nContent-Type: application/json\r\nContent-Length: 2\r\n\r\n{}" | sudo $NC -U $DOCKER_SOCKET)
+}
+
+update_stat_time() {
+  local UTIME_FILE="$STATS_DIR/$1/$2.utime"
+  local NEW_VALUE=$(date +%s%N)
+
+  if [ ! -e "$UTIME_FILE" ]; then
+    printf "0" >$UTIME_FILE
+  fi
+  local OLD_VALUE=$(cat $UTIME_FILE)
+
+  printf "$NEW_VALUE" >$UTIME_FILE
+  TIMEDIFF=$((NEW_VALUE-OLD_VALUE))
+  printf $TIMEDIFF
+}
+
+update_stat() {
+  local STAT_FILE="$STATS_DIR/$1/$2"
+  local NEW_VALUE=$3
+  if [ ! -e "$STATS_DIR/$1" ]; then
+    mkdir "$STATS_DIR/$1"
+  fi
+
+  if [ ! -e "$STAT_FILE" ]; then
+    printf "0" >$STAT_FILE
+  fi
+
+  local OLD_VALUE=$(cat $STAT_FILE)
+  local STAT=$((NEW_VALUE-OLD_VALUE)) || true
+  echo $STAT
+  printf "$NEW_VALUE" >$STAT_FILE
+}
+
+count_running() {
+  docker_get "/containers/json"
+  echo $RESPONSE | jq "length"
+}
+
+discover() {
+  docker_get "/containers/json"
+  LEN=$(echo $RESPONSE | jq "length")
+  for i in $(seq 0 $((LEN-1)))
+  do
+      NAME=$(echo "$RESPONSE"|jq ".[$I].Names[0]"|sed -e 's/"\//"/')
+      ID=$(echo "$RESPONSE"|jq ".[$I].Id")
+
+      DATA="$DATA,"'{"{#CONTAINERNAME}":'$NAME',"{#CONTAINERID}":'$ID'}'
+
+  done
+  echo '{"data":['${DATA#,}']}'
+}
+
+status() {
+  docker_get "/containers/$1/json"
+  STATUS=$(echo $RESPONSE | jq ".State.Status" | sed -e 's/\"//g')
+
+  # Not existing
+  if [ "$STATUS" = "null" ]; then
+    echo "0"
+  # Running
+  elif [ "$STATUS" = "running" ] || [ "$STATUS" = "restarting" ]; then
+    echo "2"
+  # Not running
+  elif [ "$STATUS" = "created" ] || [ "$STATUS" = "paused" ]; then
+    echo "1"
+  # Stopped and exit status 0 -> not running
+  elif [ "$STATUS" = "exited" ] && [ "$(echo $RESPONSE | jq '.State.ExitCode')" = "0" ]; then
+    echo "1"
+  # Error
+  else
+    echo "3"
+  fi
+}
+
+uptime() {
+  docker_get "/containers/$1/json"
+  # if running
+  if [ "$(echo $RESPONSE | jq '.State.Running')" = "true" ]; then
+    local STARTED=$(echo $RESPONSE | jq ".State.StartedAt" | sed -e 's/\"//g')
+    local STARTED_S=$(date -d $STARTED +%s)
+    local NOW_S=$(date +%s)
+    UPTIME=$((NOW_S-STARTED_S))
+    echo $UPTIME
+  fi
+}
+
+memory() {
+  CMD='"cat", "/sys/fs/cgroup/memory/memory.usage_in_bytes"'
+  docker_exec $1 "$CMD"
+  STAT=$(echo "$RESPONSE" | tail -n 1 | tr -cd "[:print:]")
+  if [ "$STAT" = "" ]; then
+    echo "0"
+  else
+    echo $STAT
+  fi
+}
+
+disk() {
+  docker_get "/containers/$1/json?size=1"
+  echo $RESPONSE | jq ".SizeRootFs"
+}
+
+cpu() {
+  CMD='"cat", "/sys/fs/cgroup/cpuacct/cpuacct.usage"'
+  docker_exec $1 "$CMD"
+  STAT=$(update_stat $1 "cpuacct.usage" $(echo "$RESPONSE" | tail -n 1 | tr -cd "[:print:]"))
+  TIMEDIFF=$(update_stat_time $1 "cpuacct.usage")
+  perl -e "print sprintf(\"%.4f\", $STAT/$TIMEDIFF*100)" # nanos to seconds
+}
+
+netin() {
+  CMD='"cat", "/sys/devices/virtual/net/eth0/statistics/rx_bytes"'
+  docker_exec $1 "$CMD"
+  STAT=$(update_stat $1 "rx_bytes" $(echo "$RESPONSE" | tail -n 1 | tr -cd "[:print:]"))
+  TIMEDIFF=$(update_stat_time $1 "rx_bytes")
+  perl -e "print int($STAT/$TIMEDIFF*1000000000)" # nanos to seconds
+}
+
+netout() {
+  CMD='"cat", "/sys/devices/virtual/net/eth0/statistics/tx_bytes"'
+  docker_exec $1 "$CMD"
+  STAT=$(update_stat $1 "tx_bytes" $(echo "$RESPONSE" | tail -n 1 | tr -cd "[:print:]"))
+  TIMEDIFF=$(update_stat_time $1 "tx_bytes")
+  perl -e "print int($STAT/$TIMEDIFF*1000000000)" # nanos to seconds
+}
+
+if [ $# -eq 0 ]; then
+  discover
+elif [ $# -eq 1 ]; then
+  if [ "$1" = "count" ]; then
+    count_running
+  fi
+elif [ $# -eq 2 ]; then
+  $2 $1
+fi

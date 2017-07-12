@@ -1,118 +1,54 @@
-# Docker Zabbix for CoreOS server
+# docker-zabbix-coreos-pulssi
+Dockerized Zabbix agent for CoreOS with docker process monitoring.
 
-This Docker container provides a patched Zabbix agent to monitor a real CoreOS server and all his containers.
+Based on [https://github.com/bhuisgen/docker-zabbix-coreos].
 
-The Zabbix agent has been patched to read system informations from these directories:
+## Installation
 
-* */coreos/proc* mapped from */proc* on the real host
-* */coreos/dev* mapped from */dev* on the real host
-* */coreos/sys* mapped from */sys* on the real host
+### Zabbix Server Configuration (Auto Registration)
 
-You can access the Docker REST API through the socket file */coreos/var/run/docker.sock*
+1. Import Zabbix templates under [templates](templates) to Zabbix server.
+2. Create new auto registration action and configure it as shown in images below.
 
-## Usage
+![Action Tab](documentation/auto-registration-1.png)
 
-### Build the image
+![Operations Tab](documentation/auto-registration-2.png)
 
-    # docker build -t bhuisgen/docker-zabbix-coreos .
+### Deploying the Zabbix Agent Container
 
-### Configure your Zabbix server
+Simple way to run the container is to use provided [hostname.conf](hostname.conf)
+and [run.sh](run.sh). Copy these to CoreOS host and customize hostname.conf to
+your needs. Then execute `run.sh` as follows:
 
-#### Import templates
+```
+./run.sh <zabbix-server> <hostname> [<host-metadata>]
+```
 
-Import the needed templates in *etc/zabbix/templates*
+Default for host-metadata is "coreos". If you use something else, the server
+action condition must be modified accordingly.
 
-#### Create auto-registration action (optional)
+## Monitored Items
 
-To automatically create new host on the zabbix server, create a auto-registration action (Configuration/Actions/Auto-registration):
+### CoreOS
 
-* conditions: Host metadata like 'coreos'
-* actions: Add Host, Add host to groups, Link to templates (Custom Template CoreOS, Custom Template Docker, Template App SSH Service, Template ICMP Ping, Template OS Linux)
+* Etcd client port status
+* Etcd server port status
+* Memory used by processes etcd
+* Memory used by processes fleetd
+* Number of processes etcd
+* Number of processes fleetd
+* Number of processes locksmithd
+* Number of processes update_engine
 
-The host metadata value is the value shared by all your cluster nodes. Each node must shared the same value.
+### Docker
 
-If you don't want to use the auto-registration, you must add each node in the frontend.
-
-### Run the container
-
-#### Docker
-
-To create the container:
-
-    # docker run -d -p 10050:10050 -u 0 -c 1024 -m 64M --memory-swap=-1 \
-        -v /proc:/coreos/proc:ro -v /sys:/coreos/sys:ro -v /dev:/coreos/dev:ro \
-        -v /var/run/docker.sock:/coreos/var/run/docker.sock \
-        --name zabbix-coreos bhuisgen/docker-zabbix-coreos <SERVER> <HOSTMETADATA> [<HOSTNAME>]
-
-If you want to access directly to the network stack of the node, you can use the *host* network mode but it is less secure:
-
-    # docker run -d -p 10050:10050 -u 0 -c 1024 -m 64M --memory-swap=-1 --net="host" \
-        -v /proc:/coreos/proc:ro -v /sys:/coreos/sys:ro -v /dev:/coreos/dev:ro \
-        -v /var/run/docker.sock:/coreos/var/run/docker.sock \
-        --name zabbix-coreos bhuisgen/docker-zabbix-coreos <SERVER> <HOSTMETADATA> [<HOSTNAME>]
-
-The needed options are:
-
-* *SERVER* (required): the IP address of the Zabbix server
-* *HOSTMETADATA* (required): the metadata value shared by all servers on the same cluster. This value will match the autoregistration action
-* *HOSTNAME* (optional): the hostname used by this agent in the zabbix frontend. If no value is given, the machine id of the host will be used
-
-The agent will start and the auto-registration will add your agent if a auto-registration action is matched for your host metadata. If you don't want to auto-register your nodes, you need to specify the hostname value to use.
-
-#### Fleet
-
-Copy this file:
-
-    # cp files/fleet/zabbix-agent /etc/default/zabbix-agent
-
-Each node will be created with the machine id into the Zabbix frontend.
-
-Edit the environment file to set the configuration settings:
-
-    # vim /etc/default/zabbix-agent
-
-The configuration settings are:
-
-* *SERVER*: the IP address of the Zabbix server
-* *HOSTMETADATA* (required): the metadata value shared by all servers on the same cluster. This value will match the autoregistration action
-
-You can start the agent on all your cluster nodes with fleet:
-
-    # fleetctl submit zabbix-agent
-    # fleetctl start zabbix-agent
-
-If you don't want to use auto-registration, create your service unit file. You can use the template in *files/systemd*.
-
-### FAQ
-
-#### What is the machine id of my host ?
-
-    # cat /etc/machine-id
-
-#### How to modify the agent configuration files ?
-
-    # docker exec -ti zabbix-coreos /bin/bash
-
-Inside the container:
-
-    # cd /etc/zabbix/
-
-#### How to restart the agent ?
-
-    # docker exec -ti zabbix-coreos /bin/bash
-
-Inside the container:
-
-    # supervisorctl restart zabbix-agent
-
-#### How to add custom user parameters for a host ?
-
-Create a custom configuration file *HOSTNAME.conf* in *etc/zabbix/* where HOSTNAME matches the value used for your host agent. Docker will concatenate this file into the main configuration file before running the container.
-
-Exemple 1: with manual registration, if your zabbix host is *myhost*:
-
-    # vim etc/zabbix/5bcc6a59c4234d1eac3d6c57e3e58eff.conf
-
-Exemple 2: with auto-registration, if you use *cluster* as host metadata and *5bcc6a59c4234d1eac3d6c57e3e58eff* is the machine id of your real host:
-
-    # vim etc/zabbix/cluster-5bcc6a59c4234d1eac3d6c57e3e58eff.conf
+* Number of docker and docker-proxy processes in host
+* For each container:
+  * Exit code
+  * Running state
+  * Process ID
+* Information of processes for each running container:
+  * %CPU
+  * %MEM
+  * RSS
+  * VSZ
