@@ -49,7 +49,7 @@ RUN chmod 400 /etc/sudoers.d/zabbix
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-COPY run.sh /
+COPY files/run.sh /
 RUN chmod +x /run.sh
 
 EXPOSE 10050

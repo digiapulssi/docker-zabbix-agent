@@ -10,7 +10,7 @@ modified agent.
 
 You can configure monitored hosts either manually or using auto registration.
 Auto registration can be useful if managing many (possibly transient) Core OS
-hosts. Itherwise manual configuration is quite sufficient.
+hosts. Otherwise manual configuration is quite sufficient.
 
 ### Zabbix Server Configuration (Manual)
 
@@ -33,7 +33,8 @@ hosts. Itherwise manual configuration is quite sufficient.
 
 Simple way to run the container is to use provided [hostname.conf](hostname.conf)
 and [start.sh](start.sh). Copy these to CoreOS host and customize hostname.conf
-to your needs. Then execute `start.sh` as follows:
+if you need to specify additional parameters to Zabbix agent. Then execute
+`start.sh` as follows:
 
 ```
 ./start.sh <zabbix-server> <hostname> [<host-metadata>]
@@ -42,9 +43,27 @@ to your needs. Then execute `start.sh` as follows:
 Default for host-metadata is "coreos". If you use something else _and_
 auto-registration, the server action condition must be modified accordingly.
 
+*NOTE:* Passive checks are disabled by default for more secure setup - with it
+agent container's network is separate from host and does not publish any ports.
+The Linux OS template provided with Zabbix uses passive checks so you'll need
+separate active version of it to use it without enabling passive checks for
+agent.
+
+#### Additional Options
+
+To enable passive checks use *enable-passive* option:
+```
+./start.sh --enable-passive <zabbix-server> <hostname> [<host-metadata>]
+```
+
+To override the agent container name use *container-name* option:
+```
+./start.sh --container-name myagent <zabbix-server> <hostname> [<host-metadata>]
+```
+
 ## Template Items
 
-### CoreOS
+### CoreOS (Active)
 
 * Etcd client port status
 * Etcd server port status
@@ -55,7 +74,9 @@ auto-registration, the server action condition must be modified accordingly.
 * Number of processes locksmithd
 * Number of processes update_engine
 
-### Docker
+![CoreOS Items Sample](documentation/latestdata-coreos.png)
+
+### Docker (Active/Passive)
 
 * Number of containers running in host
 * Discovery of docker containers with following items
@@ -67,6 +88,20 @@ auto-registration, the server action condition must be modified accordingly.
   * Incoming network traffic (eth0)
   * Outgoing network traffic (eth0)
 
+![Docker Items Sample](documentation/latestdata-docker.png)
+
 Note that network traffic monitoring is based only on eth0 interface which won't
 work if using `--net="host"` option for container and will not show all traffic
-if additional network interfaces are created for container.
+if additional network interfaces are created for container. Because enabling
+passive checks currently requires using host networking for the agent container,
+these items will not work for it at the same time.
+
+### Linux OS Template
+
+Using default template included with Zabbix requires enabling active monitoring.
+
+![Linux Items Sample](documentation/latestdata-oslinux.png)
+
+NOTE: The template's discovery functionality finds non-functioning items in
+docker hosts (e.g. docker volumes are found as disks but monitoring them does
+not actually work).
