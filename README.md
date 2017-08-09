@@ -65,6 +65,8 @@ To override the agent container name use *container-name* option:
 
 ### CoreOS (Active)
 
+*Template Name:* Custom Template CoreOS
+
 CoreOS template requires enabling active monitoring.
 
 * Etcd client port status
@@ -79,6 +81,9 @@ CoreOS template requires enabling active monitoring.
 ![CoreOS Items Sample](documentation/latestdata-coreos.png)
 
 ### Docker (Active/Passive)
+
+*Template Name (Passive):* Pulssi Docker Template
+*Template Name (Active):* Pulssi Docker Template (Active)
 
 * Number of containers running in host
 * Discovery of docker containers with following items
@@ -99,6 +104,8 @@ passive checks currently requires using host networking for the agent container,
 these items will not work for it at the same time.
 
 ### Linux OS Template
+
+*Template Name (Passive):* Template OS Linux
 
 Using default template included with Zabbix requires enabling active monitoring.
 
