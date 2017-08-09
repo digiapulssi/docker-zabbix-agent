@@ -16,7 +16,7 @@ hosts. Otherwise manual configuration is quite sufficient.
 
 1. Import Zabbix templates under [templates](templates) to Zabbix server (needs to be done only once).
 2. Create host in Zabbix server.
-3. Apply templates to host as shown in image below.
+3. Apply templates to host as shown in example below. See [Template Items](#template-items) for description of supported templates.
 
 ![Templates Tab](documentation/host-config-templates.png)
 
@@ -64,6 +64,8 @@ To override the agent container name use *container-name* option:
 ## Template Items
 
 ### CoreOS (Active)
+
+CoreOS template requires enabling active monitoring.
 
 * Etcd client port status
 * Etcd server port status
