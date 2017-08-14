@@ -32,7 +32,9 @@ hosts. Otherwise manual configuration is quite sufficient.
 ### Deploying the Zabbix Agent Container
 
 Simple way to run the container is to use provided [hostname.conf](hostname.conf)
-and [start.sh](start.sh). Copy these to CoreOS host and customize hostname.conf
+and [start.sh](start.sh). The optional host configuration must be placed in
+`/etc/zabbix/<hostname>.conf` where hostname is the hostname that you give to
+start script. Copy the files to CoreOS host and customize the host configuration
 if you need to specify additional parameters to Zabbix agent. Then execute
 `start.sh` as follows:
 
@@ -65,9 +67,9 @@ To override the agent container name use *container-name* option:
 
 ### CoreOS (Active)
 
-*Template Name:* Custom Template CoreOS
+* *Template Name:* Custom Template CoreOS
 
-CoreOS template requires enabling active monitoring.
+CoreOS template requires active monitoring.
 
 * Etcd client port status
 * Etcd server port status
@@ -82,8 +84,8 @@ CoreOS template requires enabling active monitoring.
 
 ### Docker (Active/Passive)
 
-*Template Name (Passive):* Pulssi Docker Template
-*Template Name (Active):* Pulssi Docker Template (Active)
+* *Template Name (Passive):* Pulssi Docker Template
+* *Template Name (Active):* Pulssi Docker Template (Active)
 
 * Number of containers running in host
 * Discovery of docker containers with following items
@@ -105,9 +107,9 @@ these items will not work for it at the same time.
 
 ### Linux OS Template
 
-*Template Name (Passive):* Template OS Linux
+* *Template Name (Passive):* Template OS Linux
 
-Using default template included with Zabbix requires enabling active monitoring.
+Using default template included with Zabbix requires enabling passive monitoring.
 
 ![Linux Items Sample](documentation/latestdata-oslinux.png)
 
