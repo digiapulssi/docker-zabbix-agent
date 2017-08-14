@@ -71,6 +71,8 @@ To override the agent container name use *container-name* option:
 
 CoreOS template requires active monitoring.
 
+Supported items:
+
 * Etcd client port status
 * Etcd server port status
 * Memory used by processes etcd
@@ -86,6 +88,8 @@ CoreOS template requires active monitoring.
 
 * *Template Name (Passive):* Pulssi Docker Template
 * *Template Name (Active):* Pulssi Docker Template (Active)
+
+Supported items:
 
 * Number of containers running in host
 * Discovery of docker containers with following items
