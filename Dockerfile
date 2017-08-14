@@ -1,5 +1,5 @@
-FROM debian:jessie
-MAINTAINER Boris HUISGEN <bhuisgen@hbis.fr>
+FROM debian:stretch-slim
+MAINTAINER Sami Pajunen <sami.pajunen@digia.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -49,7 +49,7 @@ RUN chmod 400 /etc/sudoers.d/zabbix
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-COPY run.sh /
+COPY files/run.sh /
 RUN chmod +x /run.sh
 
 EXPOSE 10050
