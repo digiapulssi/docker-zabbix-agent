@@ -1,75 +1,66 @@
-# docker-zabbix-coreos-pulssi
-Dockerized Zabbix agent for CoreOS with docker process monitoring. Standard Linux
-OS template items are supported as well as Core OS and Docker specific
-monitoring templates provided within this project.
+# docker-zabbix-agent
 
-Based on [https://github.com/bhuisgen/docker-zabbix-coreos] and uses its
-modified agent.
+Dockerized Zabbix agent for host and containers monitoring
 
-## Installation
+* Zabbix Agent version 3.2.3 patched for host monitoring via volume mounts
+* Container monitoring items included
+* CoreOS specific monitoring items included (use them if host is CoreOS)
+* Enables host and container monitoring in all Linux-based hosts
 
-You can configure monitored hosts either manually or using auto registration.
-Auto registration can be useful if managing many (possibly transient) Core OS
-hosts. Otherwise manual configuration is quite sufficient.
+### Credits
 
-### Zabbix Server Configuration (Manual)
+Zabbix Agent patching and CoreOS monitoring template is based on
+bhuisgen's work at [https://github.com/bhuisgen/docker-zabbix-coreos].
 
-1. Import Zabbix templates under [templates](templates) to Zabbix server (needs to be done only once).
-2. Create host in Zabbix server.
-3. Apply templates to host as shown in example below. See [Template Items](#template-items) for description of supported templates.
-
-![Templates Tab](documentation/host-config-templates.png)
-
-### Zabbix Server Configuration (Auto Registration)
-
-1. Import Zabbix templates under [templates](templates) to Zabbix server.
-2. Create new auto registration action and configure it as shown in images below.
-
-![Action Tab](documentation/auto-registration-1.png)
-
-![Operations Tab](documentation/auto-registration-2.png)
-
-### Deploying the Zabbix Agent Container
-
-Simple way to run the container is to use provided [hostname.conf](hostname.conf)
-and [start.sh](start.sh). The optional host configuration must be placed in
-`/etc/zabbix/<hostname>.conf` where hostname is the hostname that you give to
-start script. Copy the files to CoreOS host and customize the host configuration
-if you need to specify additional parameters to Zabbix agent. Then execute
-`start.sh` as follows:
+## Usage
 
 ```
-./start.sh <zabbix-server> <hostname> [<host-metadata>]
+docker run -d \
+  --restart=always \
+  -p 10050:10050 \
+  -v /proc:/host/proc:ro \
+  -v /sys:/host/sys:ro \
+  -v /dev:/host/dev:ro \
+  -v /etc:/host/etc:ro \
+  -v /var/run/docker.sock:/coreos/var/run/docker.sock \
+  --env ZABBIX_SERVER=<zabbix server ip> \
+  --env METADATA=<host metadata> \
+  --env HOST=<host name> \
+  --env PSKKey=<PSK TLS key> \
+  --env PSKIdentity=<PSK identity> \
+  digiapulssi/docker-zabbix-agent
 ```
 
-Default for host-metadata is "coreos". If you use something else _and_
-auto-registration, the server action condition must be modified accordingly.
+### Notes
 
-*NOTE:* Passive checks are disabled by default for more secure setup - with it
-agent container's network is separate from host and does not publish any ports.
-The Linux OS template provided with Zabbix uses passive checks so you'll need
-separate active version of it to use it without enabling passive checks for
-agent.
+* Port mapping `-p 10050:10050` is optional and required only for passive agent checks.
+* Metadata `METADATA` environment variable is optional and required only if
+  auto registration is used in Zabbix Server.
+* If host `HOST` environment variable is omitted, the container generates a host name
+  `<host metadata>-<machine id>`, where machine id is read from /etc/machine-id
+* PSK environment variables `PSKKey` and `PSKIdentity` are optional and
+  required only if TLS PSK key is used for encryption and authentication with Zabbix Server
+* To debug, add `-v /tmp/zabbix_agentd.log:/tmp/zabbix_agentd.log` to docker run command
+  and run `tail -f /tmp/zabbix_agentd.log` after starting the container.
 
-#### Additional Options
+## Zabbix Items Supported
 
-To enable passive checks use *enable-passive* option:
-```
-./start.sh --enable-passive <zabbix-server> <hostname> [<host-metadata>]
-```
+### Linux OS Template
 
-To override the agent container name use *container-name* option:
-```
-./start.sh --container-name myagent <zabbix-server> <hostname> [<host-metadata>]
-```
+Standard Linux OS Template items are supported for host monitoring.
 
-## Template Items
+![Linux Items Sample](documentation/latestdata-oslinux.png)
 
-### CoreOS (Active)
+NOTE: The discovery functionality finds some non-functioning docker-related items in
+docker host. E.g. docker volumes are found as disks but monitoring them does
+not actually work.
 
-* *Template Name:* Custom Template CoreOS
+### CoreOS
 
-CoreOS template requires active monitoring.
+The following items support host CoreOS monitoring. You can use them if the host is CoreOS.
+
+A template file for Zabbix server is included: [templates/template_coreos.xml].
+The template items use active agent checks.
 
 Supported items:
 
@@ -84,10 +75,11 @@ Supported items:
 
 ![CoreOS Items Sample](documentation/latestdata-coreos.png)
 
-### Docker (Active/Passive)
+### Docker Containers
 
-* *Template Name (Passive):* Pulssi Docker Template
-* *Template Name (Active):* Pulssi Docker Template (Active)
+The following items support monitoring Docker containers running in the host.
+
+A template file for Zabbix server is included: [templates/docker-monitoring.xml]
 
 Supported items:
 
@@ -103,20 +95,6 @@ Supported items:
 
 ![Docker Items Sample](documentation/latestdata-docker.png)
 
-Note that network traffic monitoring is based only on eth0 interface which won't
-work if using `--net="host"` option for container and will not show all traffic
-if additional network interfaces are created for container. Because enabling
-passive checks currently requires using host networking for the agent container,
-these items will not work for it at the same time.
-
-### Linux OS Template
-
-* *Template Name (Passive):* Template OS Linux
-
-Using default template included with Zabbix requires enabling passive monitoring.
-
-![Linux Items Sample](documentation/latestdata-oslinux.png)
-
-NOTE: The template's discovery functionality finds non-functioning items in
-docker hosts (e.g. docker volumes are found as disks but monitoring them does
-not actually work).
+Note that network traffic monitoring is based only on eth0 interface. It doesn't
+work if `--net=host` option is used for the monitored container. Network monitoring
+also does not show all traffic if additional network interfaces are used for monitored container.
