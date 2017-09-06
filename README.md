@@ -10,7 +10,7 @@ Dockerized Zabbix agent for host and containers monitoring
 ### Credits
 
 Zabbix Agent patching and CoreOS monitoring template is based on
-bhuisgen's work at [https://github.com/bhuisgen/docker-zabbix-coreos].
+bhuisgen's work at https://github.com/bhuisgen/docker-zabbix-coreos.
 
 ## Usage
 
@@ -60,7 +60,7 @@ Items known NOT to work properly:
 
 The following items support host CoreOS monitoring. You can use them if the host is CoreOS.
 
-A template file for Zabbix server is included: [templates/template_coreos.xml].
+A template file for Zabbix server is included: [template_coreos.xml](templates/template_coreos.xml).
 The template items use active agent checks.
 
 Supported items:
@@ -80,7 +80,8 @@ Supported items:
 
 The following items support monitoring Docker containers running in the host.
 
-A template file for Zabbix server is included: [templates/docker-monitoring.xml]
+A template file for Zabbix server is included: [docker-monitoring.xml](templates/docker-monitoring.xml).
+The template items use active agent checks.
 
 Supported items:
 
@@ -96,10 +97,11 @@ Supported items:
 
 ![Docker Items Sample](documentation/latestdata-docker.png)
 
-Note that network traffic monitoring is based only on eth0 interface. It doesn't
-work if `--net=host` option is used for the monitored container. Network monitoring
-also does not show all traffic if additional network interfaces are used for monitored container.
+Note that network traffic monitoring is based only on eth0 interface.
+
+* It doesn't work if `--net=host` option is used for the monitored container
+* Network monitoring does not show all traffic if additional network interfaces are used for monitored container
 
 ## Implementation Notes
 
-The patched Zabbix Agent version and packaging scripts can be found at [https://github.com/digiapulssi/zabbix-agent/tree/docker-host-monitoring].
+The patched Zabbix Agent version and packaging scripts can be found at https://github.com/digiapulssi/zabbix-agent/tree/docker-host-monitoring.
