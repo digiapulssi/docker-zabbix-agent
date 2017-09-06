@@ -40,8 +40,7 @@ docker run -d \
   `<host metadata>-<machine id>`, where machine id is read from /etc/machine-id
 * PSK environment variables `PSKKey` and `PSKIdentity` are optional and
   required only if TLS PSK key is used for encryption and authentication with Zabbix Server
-* To debug, add `-v /tmp/zabbix_agentd.log:/tmp/zabbix_agentd.log` to docker run command
-  and run `tail -f /tmp/zabbix_agentd.log` after starting the container.
+* To view Zabbix agent log, run `docker logs <container id>`
 
 ## Zabbix Items Supported
 
@@ -51,9 +50,11 @@ Standard Linux OS Template items are supported for host monitoring.
 
 ![Linux Items Sample](documentation/latestdata-oslinux.png)
 
-NOTE: The discovery functionality finds some non-functioning docker-related items in
-docker host. E.g. docker volumes are found as disks but monitoring them does
-not actually work.
+Items known NOT to work properly:
+
+* Number of logged in users (Zabbix uses who command inside docker container which shows the number of
+  loggers users inside the container, not inside the host)
+* Discovery founds virtual filesystem mounts used by docker volumes but their monitoring does not work
 
 ### CoreOS
 
@@ -98,3 +99,7 @@ Supported items:
 Note that network traffic monitoring is based only on eth0 interface. It doesn't
 work if `--net=host` option is used for the monitored container. Network monitoring
 also does not show all traffic if additional network interfaces are used for monitored container.
+
+## Implementation Notes
+
+The patched Zabbix Agent version and packaging scripts can be found at [https://github.com/digiapulssi/zabbix-agent/tree/docker-host-monitoring].

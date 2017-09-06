@@ -1,4 +1,5 @@
-FROM debian:wheezy-slim
+# Use jessie because the zabbix agent deb package used does not support stretch yet
+FROM debian:jessie-slim
 MAINTAINER Sami Pajunen <sami.pajunen@digia.com>
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -12,16 +13,20 @@ RUN apt-get update && \
         netcat-openbsd \
         pciutils \
         sudo \
-        gdebi-core \
+        gdebi-core && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN curl -L https://github.com/digiapulssi/zabbix-agent/releases/download/3.2.3-1.0/zabbix-agent_3.2.3-1.0.digiapulssi+wheezy-1_amd64.deb \
-    gdebi zabbix-agent*.deb \
-    rm zabbix-agent*.deb
+COPY files/zabbix-agent*.deb /tmp/
 
-COPY etc/zabbix/ /etc/zabbix/
-COPY etc/sudoers.d/zabbix /etc/sudoers.d/zabbix
+# Remove docker monitoring script coming with debian package because it conflicts with our built-in docker monitoring items
+# TBD, should some day merge them
+RUN gdebi -n /tmp/zabbix-agent*.deb && \
+    rm /etc/zabbix/zabbix_agentd.d/zabbix_discover_docker.conf && \
+    mkdir -p /var/run/zabbix
+
+COPY files/etc/zabbix/ /etc/zabbix/
+COPY files/etc/sudoers.d/zabbix /etc/sudoers.d/zabbix
 RUN chmod 400 /etc/sudoers.d/zabbix
 
 COPY files/run.sh /

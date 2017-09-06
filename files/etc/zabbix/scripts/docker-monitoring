@@ -10,7 +10,7 @@ STATS_DIR=/var/lib/zabbix/stats
 
 # Create statistics directory if it does not exist
 if [ ! -e "$STATS_DIR" ]; then
-  mkdir $STATS_DIR
+  mkdir -p $STATS_DIR
 fi
 
 # Executes GET command to docker socket
@@ -68,7 +68,7 @@ update_stat() {
   local STAT_FILE="$STATS_DIR/$1/$2"
   local NEW_VALUE=$3
   if [ ! -e "$STATS_DIR/$1" ]; then
-    mkdir "$STATS_DIR/$1"
+    mkdir -p "$STATS_DIR/$1"
   fi
 
   if [ ! -e "$STAT_FILE" ]; then
@@ -89,7 +89,7 @@ count_running() {
 discover() {
   docker_get "/containers/json"
   LEN=$(echo $RESPONSE | jq "length")
-  for i in $(seq 0 $((LEN-1)))
+  for I in $(seq 0 $((LEN-1)))
   do
       NAME=$(echo "$RESPONSE"|jq ".[$I].Names[0]"|sed -e 's/"\//"/')
       ID=$(echo "$RESPONSE"|jq ".[$I].Id")
