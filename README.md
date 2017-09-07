@@ -48,7 +48,7 @@ docker run -d \
 
 Standard Linux OS Template items are supported for host monitoring.
 
-![Linux Items Sample](documentation/latestdata-oslinux.png)
+![Linux Items Sample](https://github.com/digiapulssi/docker-zabbix-agent/blob/master/documentation/latestdata-oslinux.png)
 
 Items known NOT to work properly:
 
@@ -60,7 +60,7 @@ Items known NOT to work properly:
 
 The following items support host CoreOS monitoring. You can use them if the host is CoreOS.
 
-A template file for Zabbix server is included: [template_coreos.xml](templates/template_coreos.xml).
+A template file for Zabbix server is included: [template_coreos.xml](https://github.com/digiapulssi/docker-zabbix-agent/blob/master/templates/template_coreos.xml).
 The template items use active agent checks.
 
 Supported items:
@@ -74,13 +74,13 @@ Supported items:
 * Number of processes locksmithd
 * Number of processes update_engine
 
-![CoreOS Items Sample](documentation/latestdata-coreos.png)
+![CoreOS Items Sample](https://github.com/digiapulssi/docker-zabbix-agent/raw/master/documentation/latestdata-coreos.png)
 
 ### Docker Containers
 
 The following items support monitoring Docker containers running in the host.
 
-A template file for Zabbix server is included: [docker-monitoring.xml](templates/docker-monitoring.xml).
+A template file for Zabbix server is included: [docker-monitoring.xml](https://raw.githubusercontent.com/digiapulssi/docker-zabbix-agent/master/templates/docker-monitoring.xml).
 The template items use active agent checks.
 
 Supported items:
@@ -95,7 +95,7 @@ Supported items:
   * Incoming network traffic (eth0)
   * Outgoing network traffic (eth0)
 
-![Docker Items Sample](documentation/latestdata-docker.png)
+![Docker Items Sample](https://github.com/digiapulssi/docker-zabbix-agent/raw/master/documentation/latestdata-docker.png)
 
 Note that network traffic monitoring is based only on eth0 interface.
 
