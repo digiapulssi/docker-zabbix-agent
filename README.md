@@ -48,7 +48,7 @@ docker run -d \
 
 Standard Linux OS Template items are supported for host monitoring.
 
-![Linux Items Sample](https://github.com/digiapulssi/docker-zabbix-agent/blob/master/documentation/latestdata-oslinux.png)
+![Linux Items Sample](https://github.com/digiapulssi/docker-zabbix-agent/raw/master/documentation/latestdata-oslinux.png)
 
 Items known NOT to work properly:
 
@@ -60,7 +60,7 @@ Items known NOT to work properly:
 
 The following items support host CoreOS monitoring. You can use them if the host is CoreOS.
 
-A template file for Zabbix server is included: [template_coreos.xml](https://github.com/digiapulssi/docker-zabbix-agent/blob/master/templates/template_coreos.xml).
+A template file for Zabbix server is included: [template_coreos.xml](https://raw.githubusercontent.com/digiapulssi/docker-zabbix-agent/master/templates/template_coreos.xml).
 The template items use active agent checks.
 
 Supported items:
