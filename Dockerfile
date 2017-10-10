@@ -19,7 +19,7 @@ RUN apt-get update && \
 
 # Install Zabbix Agent and update docker monitoring script
 # so that it uses /host/var/run/docker.sock from host mount
-RUN curl --insecure -L -o /tmp/zabbix-agent.deb https://github.com/digiapulssi/zabbix-agent/releases/download/3.2.3-1.1/zabbix-agent_3.2.3-1.1.docker-host-monitoring.digiapulssi.jessie-1_amd64.deb && \
+RUN curl --insecure -L -o /tmp/zabbix-agent.deb https://github.com/digiapulssi/zabbix-agent/releases/download/3.2.3-1.1/zabbix-agent-pulssi_3.2.3-1.docker-host-monitoring.jessie-1_amd64.deb && \
     gdebi -n /tmp/zabbix-agent.deb && \
     rm /tmp/zabbix-agent.deb && \
     sed -i -e 's/\/var\/run/\/host\/var\/run/' /etc/zabbix/scripts/docker.sh && \
