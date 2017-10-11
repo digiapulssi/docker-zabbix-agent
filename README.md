@@ -55,7 +55,9 @@ Items known NOT to work properly:
 
 * Number of logged in users (Zabbix uses who command inside docker container which shows the number of
   loggers users inside the container, not inside the host)
-* Discovery founds virtual filesystem mounts used by docker volumes but their monitoring does not work
+* Discovery founds virtual filesystem mounts used by docker volumes but their monitoring does not work.
+  You can skip docker volumes discovery by adding a new `Result is FALSE` regular expression `^/var/lib/docker/devicemapper/mnt/.*$`
+  to `Administration->General->Regular expressions`, and adding that as a filter to `Mounted filesystem discovery` rule.
 * To get `Checksum of /etc/passwd` to work, you need to update item key to `vfs.file.cksum[/host/etc/passwd]`
 
 ### CoreOS
@@ -106,4 +108,5 @@ Note that network traffic monitoring is based only on eth0 interface.
 
 ## Implementation Notes
 
-The patched Zabbix Agent version and packaging scripts can be found at https://github.com/digiapulssi/zabbix-agent/tree/docker-host-monitoring.
+The patched Zabbix Agent version is [here](https://github.com/digiapulssi/zabbix/tree/docker-host-monitoring)
+and packaging scripts [here](https://github.com/digiapulssi/zabbix-agent/).
