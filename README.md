@@ -17,12 +17,13 @@ bhuisgen's work at https://github.com/bhuisgen/docker-zabbix-coreos.
 ```
 docker run -d \
   --restart=always \
+  --name zabbix-agent \
   -p 10050:10050 \
   -v /proc:/host/proc:ro \
   -v /sys:/host/sys:ro \
   -v /dev:/host/dev:ro \
   -v /etc:/host/etc:ro \
-  -v /var/run/docker.sock:/coreos/var/run/docker.sock \
+  -v /var/run/docker.sock:/host/var/run/docker.sock \
   --env ZABBIX_SERVER=<zabbix server ip> \
   --env METADATA=<host metadata> \
   --env HOST=<host name> \
@@ -55,6 +56,7 @@ Items known NOT to work properly:
 * Number of logged in users (Zabbix uses who command inside docker container which shows the number of
   loggers users inside the container, not inside the host)
 * Discovery founds virtual filesystem mounts used by docker volumes but their monitoring does not work
+* To get `Checksum of /etc/passwd` to work, you need to update item key to `vfs.file.cksum[/host/etc/passwd]`
 
 ### CoreOS
 
@@ -78,16 +80,16 @@ Supported items:
 
 ### Docker Containers
 
-The following items support monitoring Docker containers running in the host.
+Two template files for Zabbix server are included:
 
-A template file for Zabbix server is included: [docker-monitoring.xml](https://raw.githubusercontent.com/digiapulssi/docker-zabbix-agent/master/templates/docker-monitoring.xml).
-The template items use active agent checks.
+* Passive checks: [docker.xml](https://raw.githubusercontent.com/digiapulssi/docker-zabbix-agent/master/templates/docker.xml).
+* Active checks: [docker_active.xml](https://raw.githubusercontent.com/digiapulssi/docker-zabbix-agent/master/templates/docker_active.xml).
 
-Supported items:
+The following items support monitoring Docker containers running in the host:
 
 * Number of containers running in host
 * Discovery of docker containers with following items
-  * Status (1: not running, 2: running, 3: error)
+  * Status (0: exited with error or no such container, 1: running, 2: not running)
   * Uptime
   * CPU usage
   * Disk usage
