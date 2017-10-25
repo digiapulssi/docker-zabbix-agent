@@ -84,8 +84,8 @@ Supported items:
 
 Two template files for Zabbix server are included:
 
-* Passive checks: [docker.xml](https://raw.githubusercontent.com/digiapulssi/docker-zabbix-agent/master/templates/docker.xml).
-* Active checks: [docker_active.xml](https://raw.githubusercontent.com/digiapulssi/docker-zabbix-agent/master/templates/docker_active.xml).
+* Passive checks: [docker.xml](https://github.com/digiapulssi/zabbix-monitoring-scripts/raw/master/templates/docker.xml).
+* Active checks: [docker_active.xml](https://github.com/digiapulssi/zabbix-monitoring-scripts/raw/master/templates/docker_active.xml).
 
 The following items support monitoring Docker containers running in the host:
 
