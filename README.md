@@ -91,7 +91,7 @@ The following items support monitoring Docker containers running in the host:
 
 * Number of containers running in host
 * Discovery of docker containers with following items
-  * Status (0: exited with error or no such container, 1: running, 2: not running)
+  * Status (0: exited with error or no such container, 1: running, 2: not started)
   * Uptime
   * CPU usage
   * Disk usage
