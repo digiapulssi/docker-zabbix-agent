@@ -13,7 +13,8 @@ RUN apt-get update && \
         netcat-openbsd \
         pciutils \
         sudo \
-        gdebi-core && \
+        gdebi-core \
+        libonig2 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
