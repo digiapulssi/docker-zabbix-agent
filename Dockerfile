@@ -13,6 +13,7 @@ RUN apt-get update && \
         netcat-openbsd \
         pciutils \
         sudo \
+        wget \
         gdebi-core && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
