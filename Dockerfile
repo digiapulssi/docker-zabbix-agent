@@ -21,7 +21,7 @@ RUN apt-get update && \
 # Update jq to 1.5 manually since Jessie has out-dated 1.4 which does not support regexp required by docker monitoring
 RUN wget https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && \
     chmod +x jq-linux64 && \
-    sudo mv jq-linux64 $(which jq)
+    mv jq-linux64 $(which jq)
 
 # Install Zabbix Agent and update docker monitoring script
 # so that it uses /host/var/run/docker.sock from host mount
