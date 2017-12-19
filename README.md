@@ -2,9 +2,9 @@
 
 Dockerized Zabbix agent for host and containers monitoring
 
-* Zabbix Agent version 3.2.3 patched for host monitoring via volume mounts
-* Container monitoring items included
-* CoreOS specific monitoring items included (use them if host is CoreOS)
+* Zabbix Agent patched for host monitoring via volume mounts
+* Docker container monitoring items included
+* CoreOS specific monitoring items included (you can use them if the host is CoreOS)
 * Enables host and container monitoring in all Linux-based hosts
 
 ### Credits
@@ -53,9 +53,9 @@ Standard Linux OS Template items are supported for host monitoring.
 
 Items known NOT to work properly:
 
-* Number of logged in users (Zabbix uses who command inside docker container which shows the number of
+* Number of logged in users (Zabbix uses `who` command inside docker container which shows the number of
   loggers users inside the container, not inside the host)
-* Filesystem discover does not work but host filesystems can still be monitored vfs.fs items
+* Filesystem discover does not work but host filesystems can still be monitored with vfs.fs items
 * To get `Checksum of /etc/passwd` to work, you need to update item key to `vfs.file.cksum[/host/etc/passwd]`
 
 ### CoreOS
@@ -88,7 +88,8 @@ Two template files for Zabbix server are included:
 The following items support monitoring Docker containers running in the host:
 
 * Number of containers running in host
-* Discovery of docker containers with following items
+* Discovery of docker containers running in the host
+* Monitoring of docker containers with the following items:
   * Status (0: exited with error or no such container, 1: running, 2: not started)
   * Uptime
   * CPU usage
@@ -102,7 +103,7 @@ The following items support monitoring Docker containers running in the host:
 Note that network traffic monitoring is based only on eth0 interface.
 
 * It doesn't work if `--net=host` option is used for the monitored container
-* Network monitoring does not show all traffic if additional network interfaces are used for monitored container
+* Network monitoring does not show all traffic if additional network interfaces are used for the monitored container
 
 ## Implementation Notes
 
