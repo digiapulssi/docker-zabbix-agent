@@ -25,7 +25,7 @@ RUN wget https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && \
 
 # Install Zabbix Agent and update docker monitoring script
 # so that it uses /host/var/run/docker.sock from host mount
-RUN curl -L -o /tmp/zabbix-agent.deb https://github.com/digiapulssi/zabbix-agent/releases/download/v3.4.4-0/zabbix-agent-pulssi_3.4.4-0.docker-host-monitoring.jessie-1_amd64.deb && \
+RUN curl -L -o /tmp/zabbix-agent.deb https://github.com/digiapulssi/zabbix-agent/releases/download/v3.4.4-2/zabbix-agent-pulssi_3.4.4-2.docker-host-monitoring.jessie-1_amd64.deb && \
     gdebi -n /tmp/zabbix-agent.deb && \
     rm /tmp/zabbix-agent.deb && \
     sed -i -e 's/\/var\/run/\/host\/var\/run/' /etc/zabbix/scripts/docker.sh && \
