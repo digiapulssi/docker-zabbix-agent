@@ -85,6 +85,10 @@ Two template files for Zabbix server are included:
 * Passive checks: [docker.xml](https://github.com/digiapulssi/zabbix-monitoring-scripts/raw/master/templates/docker.xml).
 * Active checks: [docker_active.xml](https://github.com/digiapulssi/zabbix-monitoring-scripts/raw/master/templates/docker_active.xml).
 
+The template items monitor docker containers based on their names.
+Sometimes it's handier to do monitoring image-wise, eg. when container names are auto-generated.
+See [Docker monitoring usage](https://github.com/digiapulssi/zabbix-monitoring-scripts/blob/master/documentation/docker.md) for a detailed documentation.
+
 The following items support monitoring Docker containers running in the host:
 
 * Number of containers running in host
